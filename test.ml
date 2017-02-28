@@ -24,8 +24,6 @@ print_int (int_of_peano (power (peano_of_int 2) (peano_of_int 10)));;
 print_string "\n reverse test: ";;
 List.iter(print_int) (rev [1;2;3;4;5;6;7])
 
-
-
 (*
 print_string (Hw1.string_of_lambda (Hw1.lambda_of_string "\\x.\\y.x"));;
 *)
