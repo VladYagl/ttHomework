@@ -21,6 +21,9 @@ print_int (int_of_peano (mul (peano_of_int 13) (peano_of_int 8)));;
 print_string "\n power test: ";;
 print_int (int_of_peano (power (peano_of_int 2) (peano_of_int 10)));;
 
+print_string "\n reverse test: ";;
+List.iter(print_int) (rev [1;2;3;4;5;6;7])
+
 
 
 (*

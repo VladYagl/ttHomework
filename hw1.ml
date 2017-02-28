@@ -27,7 +27,10 @@ let rec power x y = match y with
     Z -> S(Z)
   | S y -> mul x (power x y);;
                      
-let rev x = failwith "Not implemented";;
+let rec rev x = match x with
+    [] -> []
+    | head :: tail -> (rev tail) @ (head :: []);;
+
 let merge_sort x = failwith "Not implemented";;
                      
 let string_of_lambda x = failwith "Not implemented";;
