@@ -15,7 +15,7 @@ let rec add x y = match x with
 
 let rec sub x y = match y with
     Z -> x
-  | S y -> match x with 
+  | S y -> match x with
       Z -> failwith "sub x y : x < y"
     | S x -> sub x y;;
 
@@ -26,12 +26,73 @@ let rec mul x y = match y with
 let rec power x y = match y with
     Z -> S(Z)
   | S y -> mul x (power x y);;
-                     
+
 let rec rev x = match x with
     [] -> []
-    | head :: tail -> (rev tail) @ (head :: []);;
+  | head :: tail -> (rev tail) @ (head :: []);;
 
-let merge_sort x = failwith "Not implemented";;
-                     
-let string_of_lambda x = failwith "Not implemented";;
-let lambda_of_string x = failwith "Not implemented";;
+let merge_sort x = 
+
+  let rec merge a b = match a with
+      [] -> b
+    | a_head :: a_tail -> match b with
+        [] -> a
+      | b_head :: b_tail -> 
+        if a_head < b_head then 
+          a_head :: (merge a_tail b)
+        else
+          b_head :: (merge a b_tail) in 
+
+  let rec merge_sort_impl x left right =
+    if (left >= right - 1) then (List.nth x left) :: []
+    else 
+      let m = (left + right) / 2 in
+      merge (merge_sort_impl x left m) (merge_sort_impl x m right) in
+
+  merge_sort_impl x 0 (List.length x);;
+
+let lambda_sym = "λ";;
+let lambda_sym_first = lambda_sym.[0];;
+
+let rec string_of_lambda x = match x with 
+    Var name -> name
+  | Abs (name, a) -> "("^ lambda_sym ^ name ^ "." ^ (string_of_lambda a) ^ ")"
+  | App (f, a) -> "(" ^ (string_of_lambda f) ^ " " ^ (string_of_lambda a) ^ ")"
+
+let rec lambda_of_string s =
+  (* print_string ("lambda_of_string " ^ s ^ "\n"); *)
+
+  let first_on_top s c = 
+    let rec first_on_top_impl s c index level =
+      if (index >= String.length s) then
+        String.length s
+      else 
+        if (level = 0 && s.[index] = c) then
+          index
+        else
+          first_on_top_impl s c (index + 1) (level +
+                                             match s.[index] with
+                                               '(' -> 1
+                                             | ')' -> -1
+                                             | c -> 0) in
+                                             
+
+    first_on_top_impl s c 0 0 in
+
+  let is_letter c =
+    let c = Char.lowercase c in
+    if Char.code c >= Char.code 'a' && Char.code c <= Char.code 'z' then '1'
+    else '0' in
+
+  let s = String.trim s in
+  match String.get s 0 with
+  | '(' when first_on_top s ' ' = String.length s ->
+    lambda_of_string (String.sub s 1 (String.length s - 2))
+  | c when c =  lambda_sym_first -> 
+    let dot_pos = String.index s '.' in
+    Abs (String.sub s 2 (dot_pos - 2), lambda_of_string (String.sub s (dot_pos + 1) (String.length s - dot_pos - 1)))
+  | c when not (String.contains (String.map (is_letter) s) '0') ->
+    Var s
+  | c -> 
+    let space_pos = first_on_top s ' ' in
+    App (lambda_of_string (String.sub s 0 (space_pos)), lambda_of_string (String.sub s (space_pos + 1) (String.length s - space_pos - 1)))
