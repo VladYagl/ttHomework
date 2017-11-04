@@ -195,7 +195,7 @@ let unify_suite = "unify_suite">:::[
 
 let infer_simp_type_test ctxt =
   let res = infer_simp_type !"\\f.\\x.(f (f x))" in
-  match res with 
+  match res with
     None -> assert_failure "No type"
   | _ -> print_string "\n----- INFER SIMPLE TYPE WASN'T TESTED -----\n"
   (* | Some (vars, res_type) -> assert_equal_type (S_Arrow ((S_Arrow (S_Elem "delta", S_Elem "delta")), (S_Arrow (S_Elem "delta", S_Elem "delta")))) res_type *)
@@ -207,7 +207,7 @@ let (!!) x = HM_Var x
 let (=>) x y = HM_App(x, y)
 let (|>) name a = HM_Abs(name, a)
 
-let algorithm_w_test ctxt = 
+let algorithm_w_test ctxt =
   match algorithm_w (HM_Let("z", ("x" |> !!"f" => !!"x"), !!"z" => !!"y")) with
   (* match algorithm_w (HM_Let("z", !!"x", !!"z")) with *)
   (* match algorithm_w (HM_Var "x") with *)
