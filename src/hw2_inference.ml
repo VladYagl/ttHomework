@@ -46,15 +46,6 @@ let infer_simp_type alpha =
       type_of_term (Hw2_unify.apply_substitution solution (term_of_type res_type))
     )
 
-(*TODO REMOVE*)
-let rec string_of_hmtype hm_type = match hm_type with
-    HM_Elem x -> x
-  | HM_Arrow(f, a) -> "(" ^ (string_of_hmtype f) ^ "->" ^ (string_of_hmtype a) ^ ")"
-  | HM_ForAll(name, a) -> "!" ^ name ^ "." ^ (string_of_hmtype a)
-
-let print_context context = 
-  print_string (String.concat ", " (List.map (fun (name, hm_type) -> name ^ ": " ^ (string_of_hmtype hm_type)) (TypeMap.bindings context)))
-
 let typeMap_union a b = TypeMap.merge (
     fun f a b -> match (a, b) with
         Some(a), Some(b) -> Some(a)
@@ -90,8 +81,6 @@ let algorithm_w alpha =
       | HM_Arrow  (f, a) -> typeMap_union (free_vars f) (free_vars a) in
 
     let free_in_context = (TypeMap.fold (fun name hm_type var_list -> typeMap_union (free_vars hm_type) var_list) context TypeMap.empty) in
-    print_string "\n------------------";
-    print_context free_in_context;
     let need_to_add = TypeMap.fold (fun name hm_type var_list -> TypeMap.remove name var_list) free_in_context (free_vars hm_type) in
     TypeMap.fold (fun name var_type hm_type -> HM_ForAll(name, hm_type)) need_to_add hm_type in
 
@@ -121,14 +110,6 @@ let algorithm_w alpha =
       let temp_context = TypeMap.map (apply_context a_context) context in
       let new_context = TypeMap.add name (add_for_all (TypeMap.remove name temp_context) a_type) temp_context in
       let (b_context, b_type) = impl new_context b in
-      print_string "\na: ";
-      print_context a_context;
-      print_string ("  ||| " ^ (string_of_hmtype a_type));
-      print_string "\nb: ";
-      print_context b_context;
-      print_string ("  ||| " ^ (string_of_hmtype b_type));
-      print_string "\nnew: ";
-      print_context new_context;
       (merge_context b_context a_context, b_type)
     | HM_App (f, a) -> 
       let (f_context, f_type) = impl context f in
@@ -141,7 +122,6 @@ let algorithm_w alpha =
       | None -> failwith "System has no solution, NANI?!"
   in
 
-  print_context (var_types alpha);
   let (context, hm_type) = impl (var_types alpha) alpha in
   Some ((TypeMap.bindings context), hm_type)
 
