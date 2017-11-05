@@ -52,7 +52,7 @@ let typeMap_union a b = TypeMap.merge (
       | None, Some(b) -> Some(b)
       | Some(a), None -> Some(a)
       | None, None -> None
-  ) a b 
+  ) a b
 
 let algorithm_w alpha =
 
@@ -70,11 +70,11 @@ let algorithm_w alpha =
   let merge_context first second = typeMap_union (TypeMap.map (apply_context second) first) second in
 
   let count = ref 0 in
-  let new_type () = 
+  let new_type () =
     count := !count + 1;
     HM_Elem ("type_" ^ (string_of_int !count)) in
 
-  let add_for_all context hm_type = 
+  let add_for_all context hm_type =
     let rec free_vars hm_type = match hm_type with
         HM_Elem name -> TypeMap.singleton name hm_type
       | HM_ForAll (name, a) -> TypeMap.remove name (free_vars a)
@@ -111,11 +111,11 @@ let algorithm_w alpha =
       let new_context = TypeMap.add name (add_for_all (TypeMap.remove name temp_context) a_type) temp_context in
       let (b_context, b_type) = impl new_context b in
       (merge_context b_context a_context, b_type)
-    | HM_App (f, a) -> 
+    | HM_App (f, a) ->
       let (f_context, f_type) = impl context f in
       let (a_context, a_type) = impl (TypeMap.map (apply_context f_context) context) a in
       match (Hw2_unify.solve_system [term_of_type (apply_context a_context f_type), term_of_type (HM_Arrow(a_type, new_type))]) with
-        Some ans -> 
+        Some ans ->
         let temp_context = List.fold_left (fun context (name, term) -> TypeMap.add name (type_of_term term) context) TypeMap.empty ans in
         let new_context = merge_context temp_context (merge_context a_context f_context) in
         (new_context, apply_context new_context new_type)

@@ -48,7 +48,7 @@ let solve_system system =
 
           | Var x, any ->
             if member x any then None
-            else 
+            else
               let new_solution = VarMap.add x any (VarMap.map (fun term -> apply_substitution [(x, any)] term) solution) in
               let do_sub = apply_substitution (VarMap.bindings new_solution) in
               impl (List.map (fun (left, right) -> do_sub left, do_sub right) other) new_solution
