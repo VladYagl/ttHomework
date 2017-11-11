@@ -74,9 +74,11 @@ let rec lambda_of_string s =
                                              | c -> 0) in
     impl s c 0 0 in
 
-  let is_letter c =
-    let c = Char.lowercase c in
-    if Char.code c >= Char.code 'a' && Char.code c <= Char.code 'z' then '1'
+  let is_letter cc =
+    let c = Char.code (Char.lowercase cc) in
+    if c >= Char.code 'a' && c <= Char.code 'z' then '1'
+    else if c >= Char.code '0' && c <= Char.code '9' then '1'
+    else if cc ==  '_' then '1'
     else '0' in
 
   let s = String.trim s in
@@ -90,4 +92,7 @@ let rec lambda_of_string s =
     Var s
   | c ->
     let space_pos = first_on_top s ' ' in
-    App (lambda_of_string (String.sub s 0 (space_pos)), lambda_of_string (String.sub s (space_pos + 1) (String.length s - space_pos - 1)))
+    (* print_string ("\n" ^ s); *)
+    (* print_string ("  ---  " ^ (Char.escaped c)); *)
+    (* print_string ("  ===  " ^ (String.map (is_letter) s)); *)
+    App (lambda_of_string (String.sub s 0 (space_pos)), lambda_of_string (String.sub s (space_pos + 1) (String.length s - space_pos - 1)));;
