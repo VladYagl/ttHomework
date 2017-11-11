@@ -9,22 +9,26 @@ type hm_lambda = HM_Var of string | HM_Abs of string * hm_lambda | HM_App of hm_
 module TypeMap = Map.Make(String)
 
 let create_system alpha =
-  let new_type type_map = "type_" ^ string_of_int (Hashtbl.hash type_map) in
-  let rec impl alpha type_map = match alpha with
+  let count = ref 0 in
+  let new_type () =
+    count := !count + 1;
+    S_Elem ("t" ^ (string_of_int !count)) in
+
+  let rec impl alpha type_map =
+    let new_type = new_type() in
+    match alpha with
       Hw1.Var x -> ([], TypeMap.find x type_map)
     | Hw1.App (f, a) ->
       let system_f, type_f = impl f type_map in
       let system_a, type_a = impl a type_map in
-      let pi_type = S_Elem(new_type type_map) in
-      (system_a @ system_f @ [(type_f, S_Arrow(type_a, pi_type))], pi_type)
+      (system_a @ system_f @ [(type_f, S_Arrow(type_a, new_type))], new_type)
     | Hw1.Abs (name, a) ->
-      let new_map = TypeMap.add name (S_Elem(new_type type_map)) type_map in
+      let new_map = TypeMap.add name new_type type_map in
       let system_a, type_a = impl a new_map in
       (system_a, S_Arrow (TypeMap.find name new_map, type_a)) in
 
-  let type_map = List.fold_left (fun map type_name -> TypeMap.add type_name (S_Elem(new_type map)) map) TypeMap.empty (Hw1_reduction.free_vars alpha) in
+  let type_map = List.fold_left (fun map type_name -> TypeMap.add type_name (new_type ()) map) TypeMap.empty (Hw1_reduction.free_vars alpha) in
   impl alpha type_map
-
 
 let infer_simp_type alpha =
   let simp_system, res_type = create_system alpha in
@@ -46,6 +50,7 @@ let infer_simp_type alpha =
       type_of_term (Hw2_unify.apply_substitution solution (term_of_type res_type))
     )
 
+
 let typeMap_union a b = TypeMap.merge (
     fun f a b -> match (a, b) with
         Some(a), Some(b) -> Some(a)
@@ -57,7 +62,7 @@ let typeMap_union a b = TypeMap.merge (
 let algorithm_w alpha =
 
   let rec var_types alpha = match alpha with
-      HM_Var name -> TypeMap.singleton name (HM_Elem ("type_var_" ^ name))
+      HM_Var name -> TypeMap.singleton name (HM_Elem ("v" ^ name))
     | HM_Abs (name, a) -> TypeMap.remove name (var_types a)
     | HM_App (f, a) -> typeMap_union (var_types f) (var_types a)
     | HM_Let (name, a, b) -> typeMap_union (var_types a) (TypeMap.remove name (var_types b)) in
@@ -72,7 +77,7 @@ let algorithm_w alpha =
   let count = ref 0 in
   let new_type () =
     count := !count + 1;
-    HM_Elem ("type_" ^ (string_of_int !count)) in
+    HM_Elem ("t" ^ (string_of_int !count)) in
 
   let add_for_all context hm_type =
     let rec free_vars hm_type = match hm_type with
@@ -124,6 +129,3 @@ let algorithm_w alpha =
 
   let (context, hm_type) = impl (var_types alpha) alpha in
   Some ((TypeMap.bindings context), hm_type)
-
-
-
