@@ -62,10 +62,12 @@ let rec lambda_of_string s =
   let first_on_top s c =
     let rec impl s c index level =
       if (index >= String.length s) then
-        String.length s
-      else
-        if (level = 0 && s.[index] = c) then
-          index
+        -1
+      else if (level = 0 && s.[index] = c) then
+        let next = impl s c (index + 1) 0 in
+        match next with
+            -1 -> index
+          | _ -> next
         else
           impl s c (index + 1) (level +
                                              match s.[index] with
@@ -83,7 +85,7 @@ let rec lambda_of_string s =
 
   let s = String.trim s in
   match String.get s 0 with
-  | '(' when first_on_top s ' ' = String.length s ->
+  | '(' when first_on_top s ' ' = -1 ->
     lambda_of_string (String.sub s 1 (String.length s - 2))
   | c when c =  '\\' ->
     let dot_pos = String.index s '.' in
